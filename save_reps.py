@@ -7,7 +7,8 @@ import json
 from LM_hf import *
 import ipdb
 
-DATA_DIR = './data'
+# DATA_DIR = './data'
+DATA_DIR = '/net/projects2/ycleong/sg/strategy-rl/RepBelief/data'
 CONDITION_DIR = os.path.join(DATA_DIR, 'conditions')
 RESULTS_DIR = os.path.join(DATA_DIR, 'results/representations')
 random.seed(0)
@@ -35,7 +36,7 @@ def save_condition(model_name, temperature, method,
                     init_belief, variable, condition, num_probs,
                     max_tokens, verbose, mcq, offset):
     
-    with open("./lm_paths.json", "r") as lm_paths:
+    with open("/net/projects2/ycleong/sg/strategy-rl/RepBelief/lm_paths.json", "r") as lm_paths:
         paths = json.load(lm_paths)
     llm = LM_nnsight(model_path=paths[model_name])
       
@@ -44,8 +45,8 @@ def save_condition(model_name, temperature, method,
         reader = csv.reader(f, delimiter=";")
         condition_rows = list(reader)
 
-    if not os.path.exists(os.path.join(RESULTS_DIR, f'{init_belief}_{variable}_{condition}')):
-        os.makedirs(os.path.join(RESULTS_DIR, f'{init_belief}_{variable}_{condition}'))
+    if not os.path.exists(os.path.join(RESULTS_DIR, model_name, f'{init_belief}_{variable}_{condition}')):
+        os.makedirs(os.path.join(RESULTS_DIR, model_name, f'{init_belief}_{variable}_{condition}'))
     
     stories = []
     questions = []
@@ -60,7 +61,7 @@ def save_condition(model_name, temperature, method,
     tot = num_probs - offset
     # idx = 0
 
-    output_file = os.path.join(RESULTS_DIR, f'{init_belief}_{variable}_{condition}/prompts.csv')
+    output_file = os.path.join(RESULTS_DIR, model_name, f'{init_belief}_{variable}_{condition}/prompts.csv')
     with open(output_file, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(['True', 'False'])
@@ -81,8 +82,8 @@ def save_condition(model_name, temperature, method,
             # Extract last token
             state_h = state_h[:,-1]
             state_a = state_a[:,-1]
-            path_h = os.path.join(RESULTS_DIR, f'{init_belief}_{variable}_{condition}/reps_{method}_{variable}_{condition}_true_{idx}_hidden.npy')
-            path_a = os.path.join(RESULTS_DIR, f'{init_belief}_{variable}_{condition}/reps_{method}_{variable}_{condition}_true_{idx}_attention.npy')
+            path_h = os.path.join(RESULTS_DIR, model_name, f'{init_belief}_{variable}_{condition}/reps_{method}_{variable}_{condition}_true_{idx}_hidden.npy')
+            path_a = os.path.join(RESULTS_DIR, model_name, f'{init_belief}_{variable}_{condition}/reps_{method}_{variable}_{condition}_true_{idx}_attention.npy')
             np.save(path_h, state_h)
             np.save(path_a, state_a)
 
@@ -90,8 +91,8 @@ def save_condition(model_name, temperature, method,
             # Extract last token
             state_h = state_h[:,-1]
             state_a = state_a[:,-1]
-            path_h = os.path.join(RESULTS_DIR, f'{init_belief}_{variable}_{condition}/reps_{method}_{variable}_{condition}_false_{idx}_hidden.npy')
-            path_a = os.path.join(RESULTS_DIR, f'{init_belief}_{variable}_{condition}/reps_{method}_{variable}_{condition}_false_{idx}_attention.npy')
+            path_h = os.path.join(RESULTS_DIR, model_name, f'{init_belief}_{variable}_{condition}/reps_{method}_{variable}_{condition}_false_{idx}_hidden.npy')
+            path_a = os.path.join(RESULTS_DIR, model_name, f'{init_belief}_{variable}_{condition}/reps_{method}_{variable}_{condition}_false_{idx}_attention.npy')
             np.save(path_h, state_h)
             np.save(path_a, state_a)      
   

@@ -34,6 +34,7 @@ import seaborn as sns
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--model_name', type=str, default='Qwen3-8B')
     parser.add_argument('--dynamic', type=str, default='0_forward')
     parser.add_argument('--seed', default=0, type=int, help='random seed')
     parser.add_argument('--variable', type=str, default='belief')
@@ -78,7 +79,8 @@ def plot_heatmap(ht, name, save_path=None):
 
     # Optionally save the figure as a PDF with vectorized content
     if save_path:
-        plt.savefig(save_path + '.pdf', format='pdf', bbox_inches='tight')
+        # plt.savefig(save_path + '.pdf', format='pdf', bbox_inches='tight')
+        plt.savefig(save_path + '.png', format='png', dpi=300, bbox_inches='tight')
 
     # Clear the current figure's memory to prevent resource leaks
     plt.close(fig)
@@ -103,20 +105,25 @@ def probe_single_case_multinomial(X_train, y_train, X_val, y_test, seed=0, verbo
         print(classification_report(y_test, y_test_pred))
     return train_accuracy, test_accuracy, clf
 
+
 if __name__ == "__main__":
+
+    os.chdir('/net/projects2/ycleong/sg/strategy-rl/RepBelief')
+    print(f'Current working directory: {os.getcwd()}')
+
     args = parse_args()
     set_random_seed(args.seed)
-
     
-    X_all, y_o = load_data(dynamic=args.dynamic, belief="oracle", variable=args.variable)
-    X_all, y_p = load_data(dynamic=args.dynamic, belief="protagonist", variable=args.variable)
+    X_all, y_o = load_data(model_name=args.model_name, dynamic=args.dynamic, belief="oracle", variable=args.variable)
+    X_all, y_p = load_data(model_name=args.model_name, dynamic=args.dynamic, belief="protagonist", variable=args.variable)
     y_o_int = y_o.astype(int)
     y_p_int = y_p.astype(int)
     
     # Combine to a new class - 0 (o0p0), 1 (o0p1), 2 (o1p0), 3 (o1p1)
     y_combined = 2 * y_o_int + y_p_int
     data_ids = np.arange(len(X_all))
-    all_X_train, all_X_test, y_train, y_test, ids_train, ids_test = train_test_split(X_all, y_combined, data_ids, test_size=0.2, random_state=args.seed)
+    all_X_train, all_X_test, y_train, y_test, ids_train, ids_test \
+        = train_test_split(X_all, y_combined, data_ids, test_size=0.2, random_state=args.seed)
     
     num_layers, num_heads, head_dims = all_X_train.shape[1:]
     train_acc_all = np.zeros([num_layers, num_heads])
@@ -127,15 +134,16 @@ if __name__ == "__main__":
         for head in range(num_heads):
             X_train = all_X_train[:,layer,head]
             X_test = all_X_test[:,layer,head]
-            train_acc_all[layer][head], val_acc_all[layer][head], clf = probe_single_case_multinomial(X_train, y_train, X_test, y_test, args.seed, verbose=False)
+            train_acc_all[layer][head], val_acc_all[layer][head], clf = \
+                probe_single_case_multinomial(X_train, y_train, X_test, y_test, args.seed, verbose=False)
             coefs_all[layer][head] = clf.coef_
     
-    plot_heatmap(train_acc_all, "Probe Train Acc.", save_path="data/results/probe/%s_%s_multinomial_train_acc" % (args.dynamic, args.variable))
-    plot_heatmap(val_acc_all, "Probe Val Acc.", save_path="data/results/probe/%s_%s_multinomial_val_acc" % (args.dynamic, args.variable))
+    plot_heatmap(train_acc_all, "Probe Train Acc.", save_path="data/results/probe/%s/%s_%s_multinomial_train_acc" % (args.model_name, args.dynamic, args.variable))
+    plot_heatmap(val_acc_all, "Probe Val Acc.", save_path="data/results/probe/%s/%s_%s_multinomial_val_acc" % (args.model_name, args.dynamic, args.variable))
     
-    np.save("data/results/probe/%s_%s_multinomial_train_acc.npy" % (args.dynamic, args.variable), train_acc_all)
-    np.save("data/results/probe/%s_%s_multinomial_val_acc.npy" % (args.dynamic, args.variable), val_acc_all)
-    np.save("data/results/probe/%s_%s_multinomial_coef.npy" % (args.dynamic, args.variable), coefs_all)
+    np.save("data/results/probe/%s/%s_%s_multinomial_train_acc.npy" % (args.model_name, args.dynamic, args.variable), train_acc_all)
+    np.save("data/results/probe/%s/%s_%s_multinomial_val_acc.npy" % (args.model_name, args.dynamic, args.variable), val_acc_all)
+    np.save("data/results/probe/%s/%s_%s_multinomial_coef.npy" % (args.model_name, args.dynamic, args.variable), coefs_all)
 
 
 

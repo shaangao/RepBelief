@@ -1,4 +1,6 @@
 {
+  "Qwen3-8B": "/net/projects2/ycleong/sg/strategy-rl/tmp/hf_cache/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218",
+  "Qwen3-8B-MARSHAL": "/net/projects2/ycleong/sg/strategy-rl/tmp/hf_cache/models--nics-efc--MARSHAL-Generalist-Qwen3-8B/snapshots/369d9decea6e8b347f81706fa169dbbddddce360",
   "Mistral-7B-Instruct-v0.2": "./models/Mistral-7B-Instruct-v0.2",
   "deepseek-llm-7b-chat": "./models/deepseek-llm-7b-chat"
 }
