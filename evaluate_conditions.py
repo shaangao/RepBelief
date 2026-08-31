@@ -12,7 +12,7 @@ import json
 
 from utils import *
 
-DATA_DIR = 'data'
+DATA_DIR = '/net/projects2/ycleong/sg/strategy-rl/RepBelief/data'
 
 CONDITION_DIR = os.path.join(DATA_DIR, 'conditions')
 RESULTS_DIR = os.path.join(DATA_DIR, 'results/full')
